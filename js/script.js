@@ -1,7 +1,6 @@
 (function () {
   'use strict';
 
-  const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
   const nav = document.getElementById('nav');
   const themeToggle = document.getElementById('themeToggle');
@@ -30,18 +29,8 @@
       return;
     }
 
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-setTheme(prefersDark ? 'dark' : 'light');
-  };
-
-  const toggleMobileNav = () => {
-    navToggle.classList.toggle('active');
-    navLinks.classList.toggle('open');
-  };
-
-  const closeMobileNav = () => {
-    navToggle.classList.remove('active');
-    navLinks.classList.remove('open');
+    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    setTheme(prefersLight ? 'light' : 'dark');
   };
 
   const updateNavState = () => {
@@ -145,11 +134,9 @@ setTheme(prefersDark ? 'dark' : 'light');
   };
 
   const init = () => {
-    navToggle.addEventListener('click', toggleMobileNav);
     if (themeToggle) {
       themeToggle.addEventListener('click', toggleTheme);
     }
-    navLinks.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileNav));
     window.addEventListener('scroll', updateNavState);
 
     document.querySelectorAll('.project').forEach((project, index) => {
