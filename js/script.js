@@ -4,8 +4,35 @@
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
   const nav = document.getElementById('nav');
+  const themeToggle = document.getElementById('themeToggle');
   const sections = document.querySelectorAll('section[id]');
   const navItems = navLinks.querySelectorAll('a:not(.nav__cta)');
+  const THEME_KEY = 'portfolioTheme';
+
+  const setTheme = (theme) => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('theme-light', isLight);
+    if (themeToggle) {
+      themeToggle.textContent = isLight ? '🌙' : '☀️';
+      themeToggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+    }
+    window.localStorage.setItem(THEME_KEY, theme);
+  };
+
+  const toggleTheme = () => {
+    setTheme(document.body.classList.contains('theme-light') ? 'dark' : 'light');
+  };
+
+  const initTheme = () => {
+    const savedTheme = window.localStorage.getItem(THEME_KEY);
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      setTheme(savedTheme);
+      return;
+    }
+
+    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    setTheme(prefersLight ? 'light' : 'dark');
+  };
 
   const toggleMobileNav = () => {
     navToggle.classList.toggle('active');
@@ -58,27 +85,47 @@
   };
 
   const initScreenshotGallery = () => {
-    document.querySelectorAll('.screenshot img').forEach((img) => {
-      const showImage = () => img.classList.add('loaded');
+    const sliders = document.querySelectorAll('.project-slider');
+    sliders.forEach((slider) => {
+      const items = Array.from(slider.querySelectorAll('.project-slider__items img'));
+      const image = slider.querySelector('.project-slider__image');
+      const label = slider.querySelector('.project-slider__label');
+      const description = slider.querySelector('.project-slider__description');
+      const prevButton = slider.querySelector('.project-slider__prev');
+      const nextButton = slider.querySelector('.project-slider__next');
 
-      img.addEventListener('load', showImage);
-      img.addEventListener('error', () => img.remove());
+      if (!items.length || !image || !label || !description || !prevButton || !nextButton) return;
 
-      if (img.complete && img.naturalHeight > 0) {
-        showImage();
-      }
-    });
+      let currentIndex = 0;
 
-    document.querySelectorAll('.screenshot').forEach((shot) => {
-      shot.addEventListener('click', () => {
-        const img = shot.querySelector('img');
-        if (!img) return;
+      const updateSlider = () => {
+        const active = items[currentIndex];
+        if (!active) return;
+        image.src = active.src;
+        image.alt = active.alt;
+        label.textContent = active.dataset.label || active.alt || '';
+        description.textContent = active.dataset.description || '';
+      };
+
+      const goPrevious = () => {
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        updateSlider();
+      };
+
+      const goNext = () => {
+        currentIndex = (currentIndex + 1) % items.length;
+        updateSlider();
+      };
+
+      const openFullscreen = () => {
+        const active = items[currentIndex];
+        if (!active) return;
 
         const overlay = document.createElement('div');
         overlay.style.cssText =
-          'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:24px;';
-        const clone = img.cloneNode();
-        clone.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:8px;';
+          'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:24px;';
+        const clone = active.cloneNode();
+        clone.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.35);';
         overlay.appendChild(clone);
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
@@ -87,12 +134,21 @@
           overlay.remove();
           document.body.style.overflow = '';
         });
-      });
+      };
+
+      prevButton.addEventListener('click', goPrevious);
+      nextButton.addEventListener('click', goNext);
+      image.addEventListener('click', openFullscreen);
+
+      updateSlider();
     });
   };
 
   const init = () => {
     navToggle.addEventListener('click', toggleMobileNav);
+    if (themeToggle) {
+      themeToggle.addEventListener('click', toggleTheme);
+    }
     navLinks.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileNav));
     window.addEventListener('scroll', updateNavState);
 
@@ -100,6 +156,7 @@
       project.style.transitionDelay = `${index * 0.1}s`;
     });
 
+    initTheme();
     updateNavState();
     initRevealAnimations();
     initScreenshotGallery();
