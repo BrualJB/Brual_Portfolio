@@ -3,35 +3,9 @@
 
   const navLinks = document.getElementById('navLinks');
   const nav = document.getElementById('nav');
-  const themeToggle = document.getElementById('themeToggle');
   const sections = document.querySelectorAll('section[id]');
   const navItems = navLinks.querySelectorAll('a:not(.nav__cta)');
-  const THEME_KEY = 'portfolioTheme';
 
-  const setTheme = (theme) => {
-    const isLight = theme === 'light';
-    document.body.classList.toggle('theme-light', isLight);
-    if (themeToggle) {
-      themeToggle.textContent = isLight ? '🌙' : '☀️';
-      themeToggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
-    }
-    window.localStorage.setItem(THEME_KEY, theme);
-  };
-
-  const toggleTheme = () => {
-    setTheme(document.body.classList.contains('theme-light') ? 'dark' : 'light');
-  };
-
-  const initTheme = () => {
-    const savedTheme = window.localStorage.getItem(THEME_KEY);
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      setTheme(savedTheme);
-      return;
-    }
-
-    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-    setTheme(prefersLight ? 'light' : 'dark');
-  };
 
   const updateNavState = () => {
     nav.classList.toggle('nav--scrolled', window.scrollY > 20);
@@ -134,16 +108,12 @@
   };
 
   const init = () => {
-    if (themeToggle) {
-      themeToggle.addEventListener('click', toggleTheme);
-    }
     window.addEventListener('scroll', updateNavState);
 
     document.querySelectorAll('.project').forEach((project, index) => {
       project.style.transitionDelay = `${index * 0.1}s`;
     });
 
-    initTheme();
     updateNavState();
     initRevealAnimations();
     initScreenshotGallery();
